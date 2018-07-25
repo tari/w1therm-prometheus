@@ -1,0 +1,20 @@
+[Unit]
+Description=Exports 1-wire temperature sensor readings to Prometheus
+Documentation=https://bitbucket.org/tari/w1therm-prometheus
+
+[Service]
+ExecStart=/usr/local/bin/w1therm-prometheus-exporter localhost 9000
+Restart=always
+
+StandardOutput=journal
+StandardError=journal
+
+# Standalone binary doesn't need any access beyond its own binary image and
+# a tmpfs to unpack itself in.
+DynamicUser=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

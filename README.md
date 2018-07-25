@@ -55,3 +55,28 @@ $ curl http://localhost:9000/
 # TYPE w1therm_temperature gauge
 w1therm_temperature{id="000004b926f1"} 298.15
 ```
+
+## Packaging
+
+A standalone binary can be build with [PyInstaller](
+https://www.pyinstaller.org/), which may make it easier to distribute to
+multiple machines. The provided `.spec` file is sufficient. For instance,
+to build a standalone binary after installing with pip:
+
+```
+$ pyinstaller w1therm-prometheus-exporter.spec
+```
+
+This will output `dist/w1therm-prometheus-exporter/w1therm-prometheus-exporter`
+which can be run without installation. Combining this with the provided systemd
+unit file (`w1therm-prometheus-exporter.service`), the server can be run
+automatically:
+
+```
+$ cp w1therm-prometheus-exporter.service /etc/systemd/system/
+$ systemctl daemon-reload
+$ cp dist/w1therm-prometheus-exporter /usr/local/bin/
+$ systemctl start w1therm-prometheus-exporter.service
+$ systemctl enable w1therm-prometheus-exporter.service
+```
+

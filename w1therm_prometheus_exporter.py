@@ -27,6 +27,7 @@ class Exporter(BaseHTTPRequestHandler):
 
     def do_GET(self):
         response = self.build_exposition(self.get_sensor_states())
+        response = response.encode('utf-8')
 
         # We're careful to send a content-length, so keepalive is allowed.
         self.protocol_version = 'HTTP/1.1'
@@ -36,7 +37,7 @@ class Exporter(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/plain; version=0.0.4')
         self.send_header('Content-Length', len(response))
         self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
+        self.wfile.write(response)
 
 
 class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
@@ -44,10 +45,11 @@ class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 
-# TODO much more sensible to use mqtt
-def main(argv):
+def main(argv, stderr):
     if len(argv) != 3:
-        raise ValueError("Missing required bind address and port")
+        print("Missing required bind address and port", file=stderr)
+        print("Sample usage:", argv[0], "localhost 8080", file=stderr)
+        return 1
     (addr, port) = argv[1:]
     port = int(port)
 
@@ -58,7 +60,7 @@ def main(argv):
 
 def console_entry_point():
     import sys
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv, sys.stderr))
 
 
 if __name__ == '__main__':

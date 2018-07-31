@@ -4,7 +4,13 @@ import socketserver
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from w1thermsensor import W1ThermSensor
 
-SENSORS = W1ThermSensor.get_available_sensors()
+SENSORS = None
+
+def rescan_sensors():
+    global SENSORS
+    SENSORS = W1ThermSensor.get_available_sensors()
+
+rescan_sensors()
 
 class Exporter(BaseHTTPRequestHandler):
     METRIC_HEADER = ('# HELP w1therm_temperature Temperature in Kelvin of the sensor.\n'
@@ -52,6 +58,16 @@ def main(argv, stderr):
         return 1
     (addr, port) = argv[1:]
     port = int(port)
+
+    # Use SIGHUP to refresh the sensors list; this can race with an export,
+    # but the worst that happens is the export gets a partial or old set of
+    # sensors before becoming correct again.
+    def handle_sighup(signum, frame):
+        orig_count = len(SENSORS)
+        rescan_sensors()
+        print('Rescanned sensors; had', orig_count, 'now', len(SENSORS))
+    import signal
+    signal.signal(signal.SIGHUP, rescan_sensors)
 
     print('Starting HTTP server at {}:{}'.format(addr, port))
     server = ThreadingHTTPServer((addr, port), Exporter)

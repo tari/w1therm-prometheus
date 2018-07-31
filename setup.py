@@ -4,7 +4,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setuptools.setup(name='w1therm-prometheus-exporter',
-                 version='0.1.0',
+                 version='0.2.0',
                  description='1-wire temperature sensor Prometheus exporter',
                  long_description=long_description,
                  long_description_content_type='text/markdown',
